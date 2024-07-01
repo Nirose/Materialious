@@ -4,7 +4,12 @@ import {
 	deArrowEnabledStore,
 	deArrowInstanceStore,
 	deArrowThumbnailInstanceStore,
+	deArrowTitlesOnly,
+	interfaceAutoExpandComments,
+	interfaceAutoExpandDesc,
+	interfaceForceCase,
 	interfacePreviewVideoOnHoverStore,
+	interfaceRegionStore,
 	interfaceSearchSuggestionsStore,
 	playerAlwaysLoopStore,
 	playerAutoPlayStore,
@@ -141,6 +146,31 @@ const persistedStores = [
 		name: 'synciousInstance',
 		store: synciousInstanceStore,
 		type: 'string'
+	},
+	{
+		name: 'region',
+		store: interfaceRegionStore,
+		type: 'string'
+	},
+	{
+		name: 'forceCase',
+		store: interfaceForceCase,
+		type: 'string'
+	},
+	{
+		name: 'autoExpandComments',
+		store: interfaceAutoExpandComments,
+		type: 'boolean'
+	},
+	{
+		name: 'autoExpandDesc',
+		store: interfaceAutoExpandDesc,
+		type: 'boolean'
+	},
+	{
+		name: 'deArrowTitlesOnly',
+		store: deArrowTitlesOnly,
+		type: 'boolean'
 	}
 ];
 

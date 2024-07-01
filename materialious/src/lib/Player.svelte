@@ -2,6 +2,7 @@
 	import 'vidstack/bundle';
 
 	import { page } from '$app/stores';
+	import { Capacitor } from '@capacitor/core';
 	import type { Page } from '@sveltejs/kit';
 	import { SponsorBlock, type Category } from 'sponsorblock-api';
 	import { onDestroy, onMount } from 'svelte';
@@ -22,6 +23,7 @@
 		playerProxyVideosStore,
 		playerSavePlaybackPositionStore,
 		sponsorBlockCategoriesStore,
+		sponsorBlockStore,
 		sponsorBlockUrlStore,
 		synciousStore
 	} from './store';
@@ -51,12 +53,6 @@
 	}
 
 	page.subscribe((pageUpdate) => loadTimeFromUrl(pageUpdate));
-
-	export function seekTo(time: number) {
-		if (typeof player !== 'undefined') {
-			player.currentTime = time;
-		}
-	}
 
 	const proxyVideos = get(playerProxyVideosStore);
 
@@ -104,7 +100,7 @@
 				savePlayerPos();
 			});
 
-			if (get(sponsorBlockCategoriesStore)) {
+			if (get(sponsorBlockStore) && get(sponsorBlockCategoriesStore)) {
 				const currentCategories = get(sponsorBlockCategoriesStore);
 
 				const sponsorBlockUrl = get(sponsorBlockUrlStore);
@@ -138,7 +134,11 @@
 			}
 
 			if (get(playerDashStore)) {
-				src = [{ src: data.video.dashUrl + '?local=true', type: 'application/dash+xml' }];
+				src = [{ src: data.video.dashUrl, type: 'application/dash+xml' }];
+
+				if (Capacitor.getPlatform() !== 'electron' || proxyVideos) {
+					(src[0] as { src: string }).src += '?local=true';
+				}
 
 				player.addEventListener('dash-can-play', async () => {
 					await loadPlayerPos();

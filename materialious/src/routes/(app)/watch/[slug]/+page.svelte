@@ -14,11 +14,20 @@
 	import Player from '$lib/Player.svelte';
 	import ShareVideo from '$lib/ShareVideo.svelte';
 	import Thumbnail from '$lib/Thumbnail.svelte';
-	import { cleanNumber, getBestThumbnail, numberWithCommas, unsafeRandomItem } from '$lib/misc';
+	import Transcript from '$lib/Transcript.svelte';
+	import {
+		cleanNumber,
+		getBestThumbnail,
+		letterCase,
+		numberWithCommas,
+		unsafeRandomItem
+	} from '$lib/misc';
 	import type { PlayerEvents } from '$lib/player';
 	import {
 		activePageStore,
 		authStore,
+		interfaceAutoExpandComments,
+		interfaceAutoExpandDesc,
 		miniPlayerSrcStore,
 		playerAutoplayNextByDefaultStore,
 		playerListenByDefaultStore,
@@ -60,8 +69,9 @@
 	let theatreMode = get(playerTheatreModeByDefaultStore);
 
 	let audioMode = get(playerListenByDefaultStore);
-	let seekTo: (time: number) => void;
 	let player: MediaPlayerElement;
+
+	let showTranscript = false;
 
 	playlistSettingsStore.subscribe((playlistSetting) => {
 		if (!data.playlistId) return;
@@ -392,23 +402,17 @@
 <div class="space"></div>
 
 <div class="grid">
-	<div class={`s12 m12 l${theatreMode ? '12' : '10'}`}>
+	<div class={`s12 m12 l${theatreMode ? '12' : '9'}`}>
 		<div style="display: flex;justify-content: center;">
 			{#key data.video.videoId}
 				<div
 					style="max-height: 80vh;max-width: calc(80vh * 16 / 9);overflow: hidden;position: relative;flex: 1;"
 				>
-					<Player
-						{data}
-						{audioMode}
-						isSyncing={$syncPartyPeerStore !== null}
-						bind:seekTo
-						bind:player
-					/>
+					<Player {data} {audioMode} isSyncing={$syncPartyPeerStore !== null} bind:player />
 				</div>
 			{/key}
 		</div>
-		<h5>{data.video.title}</h5>
+		<h5>{letterCase(data.video.title)}</h5>
 
 		<div class="grid no-padding">
 			<div class="s12 m12 l5">
@@ -478,6 +482,15 @@
 						<i>width_wide</i>
 						<div class="tooltip">{$_('player.theatreMode')}</div>
 					</button>
+					<button
+						on:click={() => ((showTranscript = !showTranscript), (theatreMode = false))}
+						class:border={!showTranscript}
+					>
+						<i>description</i>
+						<div class="tooltip">
+							{$_('transcript')}
+						</div>
+					</button>
 					<button class="border"
 						><i>share</i>
 						<div class="tooltip">
@@ -544,7 +557,7 @@
 		</div>
 
 		<article>
-			<details>
+			<details open={$interfaceAutoExpandDesc}>
 				<summary class="bold none">
 					<nav>
 						<div class="max">
@@ -562,7 +575,7 @@
 						{#if data.content.timestamps.length > 0}
 							<h6 style="margin-bottom: .3em;">Chapters</h6>
 							{#each data.content.timestamps as timestamp}
-								<button on:click={() => seekTo(timestamp.time)} class="timestamps"
+								<button on:click={() => (player.currentTime = timestamp.time)} class="timestamps"
 									>{timestamp.timePretty}
 									{#if !timestamp.title.startsWith('-')}
 										-
@@ -586,7 +599,7 @@
 
 		{#if comments && comments.comments.length > 0}
 			<article>
-				<details open>
+				<details open={$interfaceAutoExpandComments}>
 					<summary class="none bold">
 						<nav>
 							<div class="max">{numberWithCommas(comments.commentCount)} comments</div>
@@ -611,19 +624,22 @@
 		{/if}
 	</div>
 	{#if !theatreMode}
-		<div class="s12 m12 l2">
+		<div class="s12 m12 l3">
+			{#if player && showTranscript}
+				<Transcript bind:player video={data.video} />
+			{/if}
 			{#if !playlist}
 				{#if data.video.recommendedVideos}
 					{#each data.video.recommendedVideos as recommendedVideo}
 						<article class="no-padding">
 							{#key recommendedVideo.videoId}
-								<Thumbnail video={recommendedVideo} />
+								<Thumbnail video={recommendedVideo} sideways={true} />
 							{/key}
 						</article>
 					{/each}
 				{/if}
 			{:else}
-				<article style="height: 75vh; position: relative;" id="playlist" class="scroll no-padding">
+				<article style="height: 85vh; position: relative;" id="playlist" class="scroll no-padding">
 					<article class="no-elevate" style="position: sticky; top: 0; z-index: 3;">
 						<h6>{playlist.title}</h6>
 						<p>
@@ -692,10 +708,6 @@
 <style>
 	:root {
 		--plyr-color-main: var(--primary);
-	}
-
-	.grid {
-		padding: 1em 10em;
 	}
 
 	.timestamps {

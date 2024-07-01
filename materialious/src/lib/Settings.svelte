@@ -1,17 +1,24 @@
 <script lang="ts">
 	import { bookmarkletSaveToUrl } from '$lib/externalSettings';
 	import { Capacitor } from '@capacitor/core';
+	import ui from 'beercss';
+	import { iso31661 } from 'iso-3166';
 	import { _ } from 'svelte-i18n';
 	import { get } from 'svelte/store';
-	import { ensureNoTrailingSlash } from './misc';
+	import { ensureNoTrailingSlash, titleCase, titleCases, truncate } from './misc';
 	import {
 		authStore,
 		darkModeStore,
 		deArrowEnabledStore,
 		deArrowInstanceStore,
 		deArrowThumbnailInstanceStore,
+		deArrowTitlesOnly,
 		instanceStore,
+		interfaceAutoExpandComments,
+		interfaceAutoExpandDesc,
+		interfaceForceCase,
 		interfacePreviewVideoOnHoverStore,
+		interfaceRegionStore,
 		interfaceSearchSuggestionsStore,
 		playerAlwaysLoopStore,
 		playerAndroidBackgroundPlayStore,
@@ -42,6 +49,8 @@
 	let invidiousInstance = get(instanceStore);
 	let deArrowUrl = get(deArrowInstanceStore);
 	let deArrowThumbnailUrl = get(deArrowThumbnailInstanceStore);
+	let region = get(interfaceRegionStore);
+	let forceCase = get(interfaceForceCase);
 
 	const sponsorCategories = [
 		{ name: $_('layout.sponsors.sponsor'), category: 'sponsor' },
@@ -131,6 +140,7 @@
 
 	<div class="settings">
 		<h6>Interface</h6>
+
 		<div class="field no-margin">
 			<nav class="no-padding">
 				<div class="max">
@@ -162,6 +172,67 @@
 					<span></span>
 				</label>
 			</nav>
+		</div>
+
+		<div class="field no-margin">
+			<nav class="no-padding">
+				<div class="max">
+					<div>{$_('layout.expandDescription')}</div>
+				</div>
+				<label class="switch">
+					<input
+						type="checkbox"
+						bind:checked={$interfaceAutoExpandDesc}
+						on:click={() => interfaceAutoExpandDesc.set(!$interfaceAutoExpandDesc)}
+					/>
+					<span></span>
+				</label>
+			</nav>
+		</div>
+
+		<div class="field no-margin">
+			<nav class="no-padding">
+				<div class="max">
+					<div>{$_('layout.expandComments')}</div>
+				</div>
+				<label class="switch">
+					<input
+						type="checkbox"
+						bind:checked={$interfaceAutoExpandComments}
+						on:click={() => interfaceAutoExpandComments.set(!$interfaceAutoExpandComments)}
+					/>
+					<span></span>
+				</label>
+			</nav>
+		</div>
+
+		<div class="field label suffix border">
+			<select name="region" bind:value={region} on:change={() => interfaceRegionStore.set(region)}>
+				{#each iso31661 as region}
+					<option selected={$interfaceRegionStore === region.alpha2} value={region.alpha2}
+						>{region.alpha2} - {truncate(region.name, 13)}</option
+					>
+				{/each}
+			</select>
+			<label for="region">{$_('region')}</label>
+			<i>arrow_drop_down</i>
+		</div>
+
+		<div class="field label suffix border">
+			<select
+				name="case"
+				bind:value={forceCase}
+				on:change={() => interfaceForceCase.set(forceCase)}
+			>
+				<option selected={$interfaceForceCase === null} value={null}>Default</option>
+				{#each titleCases as caseType}
+					<option selected={$interfaceForceCase === caseType} value={caseType}
+						>{titleCase(`${caseType}`)}</option
+					>
+				{/each}
+			</select>
+			<label for="case">{$_('letterCase')}</label>
+			<i>arrow_drop_down</i>
 		</div>
 	</div>
 
@@ -497,6 +568,20 @@
 				</button>
 			</nav>
 		</form>
+
+		<nav class="no-padding">
+			<div class="max">
+				<p>{$_('layout.deArrow.titleOnly')}</p>
+			</div>
+			<label class="switch">
+				<input
+					bind:checked={$deArrowTitlesOnly}
+					on:click={() => deArrowTitlesOnly.set(!$deArrowTitlesOnly)}
+					type="checkbox"
+				/>
+				<span></span>
+			</label>
+		</nav>
 
 		<nav class="no-padding">
 			<div class="max">
