@@ -10,6 +10,7 @@
 		letterCase,
 		proxyGoogleImage,
 		proxyVideoUrl,
+		truncate,
 		videoLength
 	} from './misc';
 	import type { PlayerEvents } from './player';
@@ -230,12 +231,7 @@
 		showVideoPreview = true;
 		try {
 			videoPreview = await getVideo(video.videoId);
-			if (videoPreview.formatStreams.length === 0) {
-				showVideoPreview = false;
-				videoPreview = null;
-			}
-
-			if (videoPreview.hlsUrl) {
+			if (videoPreview.hlsUrl || videoPreview.formatStreams.length === 0) {
 				showVideoPreview = false;
 				videoPreview = null;
 			} else {
@@ -374,7 +370,7 @@
 					data-sveltekit-preload-data="off"
 					href={watchUrl.toString()}
 				>
-					<span class="bold">{letterCase(video.title.trimEnd())}</span>
+					<span class="bold">{letterCase(truncate(video.title.trimEnd(), 80))}</span>
 				</a>
 
 				<div>
