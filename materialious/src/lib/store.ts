@@ -18,16 +18,10 @@ function platformDependentDefault(givenValue: any, defaultValue: any): any {
 export const instanceStore: Writable<string> = persisted(
 	'invidiousInstance',
 	platformDependentDefault(
-		ensureNoTrailingSlash(import.meta.env.VITE_DEFAULT_INVIDIOUS_INSTANCE),
+		!import.meta.env.VITE_DEFAULT_INVIDIOUS_INSTANCE
+			? undefined
+			: ensureNoTrailingSlash(import.meta.env.VITE_DEFAULT_INVIDIOUS_INSTANCE),
 		'https://invidious.materialio.us'
-	)
-);
-
-export const companionStore: Writable<string | undefined> = persisted(
-	'companionInstance',
-	platformDependentDefault(
-		ensureNoTrailingSlash(import.meta.env.VITE_DEFAULT_COMPANION_INSTANCE),
-		undefined
 	)
 );
 
@@ -77,6 +71,10 @@ export const interfaceSearchSuggestionsStore = persisted('searchSuggestions', tr
 export const interfaceForceCase: Writable<TitleCase> = persisted('forceCase', null);
 export const interfaceAutoExpandComments: Writable<boolean> = persisted('autoExpandComments', true);
 export const interfaceAutoExpandDesc: Writable<boolean> = persisted('autoExpandDesc', false);
+export const interfaceAutoExpandChapters: Writable<boolean> = persisted(
+	'autoExpandChapters',
+	false
+);
 export const interfaceAmoledTheme = persisted('amoledTheme', false);
 export const interfaceLowBandwidthMode = persisted('lowBandwidthMode', false);
 export const interfaceDisplayThumbnailAvatars = persisted('disableThumbnailAvatars', false);

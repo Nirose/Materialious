@@ -7,17 +7,17 @@
 	import { Capacitor } from '@capacitor/core';
 	import ui from 'beercss';
 	import { iso31661 } from 'iso-3166';
-	import { _ } from 'svelte-i18n';
+	import { _ } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import { ensureNoTrailingSlash } from '../../misc';
 	import { getPages } from '../../navPages';
 	import {
 		authStore,
-		companionStore,
 		darkModeStore,
 		instanceStore,
 		interfaceAllowInsecureRequests,
 		interfaceAmoledTheme,
+		interfaceAutoExpandChapters,
 		interfaceAutoExpandComments,
 		interfaceAutoExpandDesc,
 		interfaceDefaultPage,
@@ -31,7 +31,6 @@
 	} from '../../store';
 
 	let invidiousInstance = $state(get(instanceStore));
-	let companionInstance = $state(get(companionStore));
 	let region = $state(get(interfaceRegionStore));
 	let forceCase = $state(get(interfaceForceCase));
 	let defaultPage = $state(get(interfaceDefaultPage));
@@ -93,11 +92,6 @@
 		ui('#dialog-settings');
 	}
 
-	function setCompanion(event: Event) {
-		event.preventDefault();
-		companionStore.set(ensureNoTrailingSlash(companionInstance));
-	}
-
 	function allowInsecureRequests() {
 		if (!Capacitor.isNativePlatform()) return;
 		interfaceAllowInsecureRequests.set(!$interfaceAllowInsecureRequests);
@@ -152,21 +146,6 @@
 				</label>
 			</nav>
 		</div>
-	{/if}
-
-	<form onsubmit={setCompanion}>
-		<nav>
-			<div class="field label border max">
-				<input bind:value={companionInstance} name="companion-instance" type="text" />
-				<label for="companion-instance">{$_('layout.companionUrl')}</label>
-			</div>
-			<button class="square round">
-				<i>done</i>
-			</button>
-		</nav>
-	</form>
-	{#if invalidInstance}
-		<div style="margin-bottom: 6em;"></div>
 	{/if}
 {/if}
 
@@ -266,6 +245,22 @@
 				type="checkbox"
 				bind:checked={$interfaceAutoExpandDesc}
 				onclick={() => interfaceAutoExpandDesc.set(!$interfaceAutoExpandDesc)}
+			/>
+			<span></span>
+		</label>
+	</nav>
+</div>
+
+<div class="field no-margin">
+	<nav class="no-padding">
+		<div class="max">
+			<div>{$_('layout.expandChapters')}</div>
+		</div>
+		<label class="switch">
+			<input
+				type="checkbox"
+				bind:checked={$interfaceAutoExpandChapters}
+				onclick={() => interfaceAutoExpandChapters.set(!$interfaceAutoExpandChapters)}
 			/>
 			<span></span>
 		</label>
